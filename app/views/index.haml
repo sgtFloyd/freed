@@ -1,3 +1,16 @@
+:ruby
+  def time_ago(time)
+    difference = (Time.now - Time.at(time.to_i)).to_i
+    difference -= (seconds = difference % 60)
+    difference -= 60 * (minutes = difference / 60)
+    minutes -= 60 * (hours = minutes / 60)
+    "#{pad(hours)}:#{pad(minutes)}:#{pad(seconds)}"
+  end
+
+  def pad(i)
+    i.to_i < 10 ? "0#{i}" : i.to_s
+  end
+
 %html
   %head
     %title Freed
@@ -32,8 +45,8 @@
           %tr{ id: feed_id }
             %td= feed['feed_url']
             %td= feed['notify_email']
-            %td= feed['email_verified'] == 'true' ? "Yes" : "No"
+            %td= feed['email_verified'] == 'true' ? "Yes" : "<b>No</b>"
             %td= feed['frequency'] + (feed['frequency'] == '1' ? ' minute' : ' minutes')
             %td{ 'data-last-digest' => feed['last_digest'] }
-              = Time.at(feed['last_update'].to_i).localtime
+              = time_ago(feed['last_update']) + " ago"
 

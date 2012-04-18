@@ -38,9 +38,9 @@ end
 
 def all_feeds
   redis = settings.redis
-  redis.smembers("freed:feeds").inject({}) do |feeds, feed_id|
+  Hash[redis.smembers("freed:feeds").inject({}) do |feeds, feed_id|
     feeds[feed_id] = redis.hgetall("freed:#{feed_id}"); feeds
-  end
+  end.sort_by{|id, feed| -feed['last_update'].to_i}]
 end
 
 # ============================== SINATRA ============================== #
