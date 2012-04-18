@@ -1,0 +1,1 @@
+:redis: 'redis://redistogo:password@bass.redistogo.com:1111'

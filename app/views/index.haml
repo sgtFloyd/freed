@@ -1,6 +1,8 @@
 %html
   %head
     %title Freed
+    :css
+      td{padding: 0px 25px}
 
   %body{ style: 'font-family:monospace' }
 
@@ -20,4 +22,18 @@
         %input{ type: 'submit' }
 
     %p
-      Existing Freed:
+      %table
+        %th Feed URL
+        %th Email Address
+        %th Verified?
+        %th Frequency
+        %th Last Updated
+        - feeds.each do |feed_id, feed|
+          %tr{ id: feed_id }
+            %td= feed['feed_url']
+            %td= feed['notify_email']
+            %td= feed['email_verified'] == 'true' ? "Yes" : "No"
+            %td= feed['frequency'] + (feed['frequency'] == '1' ? ' minute' : ' minutes')
+            %td{ 'data-last-digest' => feed['last_digest'] }
+              = Time.at(feed['last_update'].to_i).localtime
+
