@@ -16,7 +16,7 @@ end
 #     notify_email:   string
 #     email_verified: 0/1
 #     frequency:      int (in minutes)
-#     last_update:    int (in seconds since epoch)
+#     last_checked:   int (in seconds since epoch)
 #     last_hash:      hex digest of last page load
 #   }
 
@@ -30,7 +30,7 @@ def save_feed(params)
     'notify_email',   params['notify_email'],
     'email_verified', false,
     'frequency',      params['frequency'] || 5,
-    'last_update',    Time.now.to_i,
+    'last_checked',   Time.now.to_i,
     'last_digest',    Digest::SHA1.hexdigest(feed_page.read)
   redis.sadd "freed:feeds", guid
   # TODO: send verification email
@@ -40,7 +40,7 @@ def all_feeds
   redis = settings.redis
   Hash[redis.smembers("freed:feeds").inject({}) do |feeds, feed_id|
     feeds[feed_id] = redis.hgetall("freed:#{feed_id}"); feeds
-  end.sort_by{|id, feed| -feed['last_update'].to_i}]
+  end.sort_by{|id, feed| -feed['last_checked'].to_i}]
 end
 
 # ============================== SINATRA ============================== #
@@ -61,4 +61,10 @@ end
 post '/feed' do
   save_feed params
   redirect '/'
+end
+
+delete '/feed/:id' do
+  redis = settings.redis
+  redis.srem("freed:feeds", params[:id])
+  redis.del("freed:#{params[:id]}")
 end

@@ -14,8 +14,32 @@
 %html
   %head
     %title Freed
+
+    %script{ type: 'text/javascript', src: 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js' }
+
+    :javascript
+      $(document).ready(function() {
+        // delete feeds
+        $('.delete').click(function(){
+          var feed_id = $(this).closest('tr').attr('id');
+          $.ajax({
+            url: '/feed/' + feed_id,
+            type: 'DELETE',
+            success: $('#'+feed_id).remove()
+          });
+        });
+
+        // show delete link on hover
+        $('tr').hover(
+          function(){ $(this).find('.delete').show(); },
+          function(){ $(this).find('.delete').hide(); }
+        );
+
+      });
+
     :css
       td{padding: 0px 25px}
+      .delete{text-decoration: none; display: none}
 
   %body{ style: 'font-family:monospace' }
 
@@ -40,7 +64,8 @@
         %th Email Address
         %th Verified?
         %th Frequency
-        %th Last Updated
+        %th Last Checked
+        %th
         - feeds.each do |feed_id, feed|
           %tr{ id: feed_id }
             %td= feed['feed_url']
@@ -48,5 +73,7 @@
             %td= feed['email_verified'] == 'true' ? "Yes" : "<b>No</b>"
             %td= feed['frequency'] + (feed['frequency'] == '1' ? ' minute' : ' minutes')
             %td{ 'data-last-digest' => feed['last_digest'] }
-              = time_ago(feed['last_update']) + " ago"
+              = time_ago(feed['last_checked']) + " ago"
+            %td
+              %a.delete{ href:'javascript:' } x
 
