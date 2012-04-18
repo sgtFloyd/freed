@@ -1,9 +1,8 @@
 :ruby
   def time_ago(time)
-    difference = (Time.now - Time.at(time.to_i)).to_i
-    difference -= (seconds = difference % 60)
-    difference -= 60 * (minutes = difference / 60)
-    minutes -= 60 * (hours = minutes / 60)
+    seconds = (Time.now - Time.at(time.to_i)).to_i
+    hours, seconds = seconds.divmod 60*60
+    minutes, seconds = seconds.divmod 60
     "#{pad(hours)}:#{pad(minutes)}:#{pad(seconds)}"
   end
 
@@ -14,7 +13,6 @@
 %html
   %head
     %title Freed
-
     %script{ type: 'text/javascript', src: 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js' }
 
     :javascript
@@ -34,12 +32,18 @@
           function(){ $(this).find('.delete').show(); },
           function(){ $(this).find('.delete').hide(); }
         );
-
       });
 
     :css
-      td{padding: 0px 25px}
-      .delete{text-decoration: none; display: none}
+      td, th{padding: 0px 25px}
+      .feed_url{
+        text-decoration: none;
+      }
+      .delete{
+        text-decoration: none;
+        color: red;
+        display: none;
+      }
 
   %body{ style: 'font-family:monospace' }
 
@@ -68,12 +72,13 @@
         %th
         - feeds.each do |feed_id, feed|
           %tr{ id: feed_id }
-            %td= feed['feed_url']
+            %td
+              %a.feed_url{ href: feed['feed_url'], target: '_blank' }= feed['feed_url']
             %td= feed['notify_email']
             %td= feed['email_verified'] == 'true' ? "Yes" : "<b>No</b>"
             %td= feed['frequency'] + (feed['frequency'] == '1' ? ' minute' : ' minutes')
             %td{ 'data-last-digest' => feed['last_digest'] }
               = time_ago(feed['last_checked']) + " ago"
             %td
-              %a.delete{ href:'javascript:' } x
+              %a.delete{ href:'javascript:' } delete
 
