@@ -1,0 +1,1 @@
+web: bundle exec ruby app/freed.rb -p $PORT
