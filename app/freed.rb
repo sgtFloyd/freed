@@ -67,6 +67,8 @@ end
 
 def send_update_email(feed_id)
   feed = settings.redis.hgetall("freed:#{feed_id}")
+  send_email( feed['notify_email'], 'feed_updated',
+    {feed_url: feed['feed_url']})
 end
 
 def send_email(recipient, template, locals)
