@@ -43,9 +43,12 @@ def update_feed(id)
   feed = redis.hgetall("freed:#{params[:id]}")
   feed_page = open feed['feed_url'] rescue nil
   return unless feed_page
+  old_hash = feed['last_digest']
+  new_hash = Digest::SHA1.hexdigest(feed_page.read)
   redis.hmset "freed:#{params[:id]}",
-    'last_checked',   Time.now.to_i,
-    'last_digest',    Digest::SHA1.hexdigest(feed_page.read)
+    'last_checked', Time.now.to_i,
+    'last_digest',  new_hash
+  old_hash != new_hash
 end
 
 def all_feeds
@@ -58,11 +61,12 @@ end
 # ============================== EMAILS ============================== #
 
 def send_email_verification(recipient, feed_id, feed_url)
-  send_email( recipient,
-    'verify_email',
-    { feed_id: feed_id,
-      feed_url: feed_url }
-  )
+  send_email( recipient, 'verify_email',
+    {feed_id: feed_id, feed_url: feed_url})
+end
+
+def send_update_email(feed_id)
+  feed = settings.redis.hgetall("freed:#{feed_id}")
 end
 
 def send_email(recipient, template, locals)
@@ -101,7 +105,8 @@ end
 
 # UPDATE
 put '/feed/:id' do
-  update_feed params
+  changed = update_feed(params)
+  send_update_email(params[:id]) if changed
 end
 
 # DELETE
