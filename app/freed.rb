@@ -36,6 +36,16 @@ def save_feed(params)
   # TODO: send verification email
 end
 
+def update_feed(id)
+  redis = settings.redis
+  feed = redis.hgetall("freed:#{params[:id]}")
+  feed_page = open feed['feed_url'] rescue nil
+  return unless feed_page
+  redis.hmset "freed:#{params[:id]}",
+    'last_checked',   Time.now.to_i,
+    'last_digest',    Digest::SHA1.hexdigest(feed_page.read)
+end
+
 def all_feeds
   redis = settings.redis
   Hash[redis.smembers("freed:feeds").inject({}) do |feeds, feed_id|
@@ -58,11 +68,18 @@ get '/' do
   haml :index, :locals => { :feeds => all_feeds }
 end
 
+# CREATE
 post '/feed' do
   save_feed params
   redirect '/'
 end
 
+# UPDATE
+put '/feed/:id' do
+  update_feed params
+end
+
+# DELETE
 delete '/feed/:id' do
   redis = settings.redis
   redis.srem("freed:feeds", params[:id])
