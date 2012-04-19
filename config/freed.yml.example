@@ -1,1 +1,4 @@
-:redis: 'redis://redistogo:password@bass.redistogo.com:1111'
+:redis: redis://redistogo:password@bass.redistogo.com:1111
+
+:gmail_user: freed.notifications
+:gmail_pass: gmail-password

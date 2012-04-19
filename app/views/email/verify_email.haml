@@ -1,0 +1,9 @@
+="From: #{from}"
+="To: #{to}"
+="Subject: Please verify your Freed request"
+="Date: #{Time.now.rfc2822}"
+="\r\n"
+="\r\n"
+="You have requested email notifications for #{feed_url}."
+Please click the following link to confirm this request:
+="http://freed.herokuapp.com/feed/verify/#{feed_id}"

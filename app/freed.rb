@@ -4,6 +4,8 @@ require 'open-uri'
 require 'redis'
 require 'securerandom'
 require 'sinatra'
+require 'time'
+require 'tlsmail'
 require 'yaml'
 
 def load_config(config, &block)
@@ -33,7 +35,7 @@ def save_feed(params)
     'last_checked',   Time.now.to_i,
     'last_digest',    Digest::SHA1.hexdigest(feed_page.read)
   redis.sadd "freed:feeds", guid
-  # TODO: send verification email
+  send_email_verification(params['notify_email'], guid, params['feed_url'])
 end
 
 def update_feed(id)
@@ -53,6 +55,27 @@ def all_feeds
   end.sort_by{|id, feed| -feed['last_checked'].to_i}]
 end
 
+# ============================== EMAILS ============================== #
+
+def send_email_verification(recipient, feed_id, feed_url)
+  send_email( recipient,
+    'verify_email',
+    { feed_id: feed_id,
+      feed_url: feed_url }
+  )
+end
+
+def send_email(recipient, template, locals)
+  from = settings.gmail_user + '@gmail.com'
+  content = Haml::Engine.new( File.open("app/views/email/#{template}.haml").read )
+            .render( Object.new, locals.merge(:to => recipient, :from => from) )
+  Net::SMTP.enable_tls(OpenSSL::SSL::VERIFY_NONE)
+  Net::SMTP.start('smtp.gmail.com', 587, 'gmail.com', from, settings.gmail_pass, :login) do |smtp|
+    smtp.send_message(content, from, recipient)
+  end
+rescue => e
+end
+
 # ============================== SINATRA ============================== #
 
 configure do
@@ -61,6 +84,8 @@ configure do
     set :redis => Redis.new(:host => redistogo.host,
                             :port => redistogo.port,
                             :password => redistogo.password)
+    set :gmail_user => conf[:gmail_user],
+        :gmail_pass => conf[:gmail_pass]
   end
 end
 
@@ -82,6 +107,16 @@ end
 # DELETE
 delete '/feed/:id' do
   redis = settings.redis
-  redis.srem("freed:feeds", params[:id])
-  redis.del("freed:#{params[:id]}")
+  if redis.sismember('freed:feeds', params[:id])
+    redis.srem("freed:feeds", params[:id])
+    redis.del("freed:#{params[:id]}")
+  end
+end
+
+get '/feed/verify/:id' do
+  redis = settings.redis
+  if redis.sismember('freed:feeds', params[:id])
+    redis.hset("freed:#{params[:id]}", 'email_verified', true)
+  end
+  redirect '/'
 end
