@@ -1,6 +1,7 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    differ (0.1.2)
     haml (3.1.4)
     rack (1.4.1)
     rack-protection (1.2.0)
@@ -17,6 +18,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  differ
   haml
   redis
   sinatra

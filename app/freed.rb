@@ -1,3 +1,4 @@
+require 'differ'
 require 'digest'
 require 'haml'
 require 'open-uri'
@@ -23,32 +24,45 @@ end
 #   }
 
 def save_feed(params)
-  feed_page = open params['feed_url'] rescue nil
+  feed_page = open(params['feed_url']).read rescue nil
   return unless feed_page
-  redis = settings.redis
   guid = SecureRandom.uuid
-  redis.hmset "freed:#{guid}",
+  settings.redis.hmset "freed:#{guid}",
     'feed_url',       params['feed_url'],
     'notify_email',   params['notify_email'],
     'email_verified', false,
     'frequency',      params['frequency'] || 5,
     'last_checked',   Time.now.to_i,
-    'last_digest',    Digest::SHA1.hexdigest(feed_page.read)
-  redis.sadd "freed:feeds", guid
+    'last_content',   feed_page,
+    'last_digest',    Digest::SHA1.hexdigest(feed_page)
+  settings.redis.sadd "freed:feeds", guid
   send_email_verification(params['notify_email'], guid, params['feed_url'])
 end
 
 def update_feed(id)
-  redis = settings.redis
-  feed = redis.hgetall("freed:#{params[:id]}")
-  feed_page = open feed['feed_url'] rescue nil
+  feed = settings.redis.hgetall("freed:#{id}")
+  feed_page = open(feed['feed_url']).read rescue nil
   return unless feed_page
-  old_hash = feed['last_digest']
-  new_hash = Digest::SHA1.hexdigest(feed_page.read)
-  redis.hmset "freed:#{params[:id]}",
+  old_cont, old_hash = feed['last_content'], feed['last_digest']
+  new_cont, new_hash = feed_page, Digest::SHA1.hexdigest(feed_page)
+
+  settings.redis.hmset "freed:#{id}",
     'last_checked', Time.now.to_i,
+    'last_content', new_cont,
     'last_digest',  new_hash
-  old_hash != new_hash
+  if old_hash != new_hash
+    diff = Differ.diff_by_line(new_cont, old_cont)
+    changes = diff.instance_variable_get(:@raw).select{|r| Differ::Change === r}
+    send_update_email(id, changes)
+  end
+end
+
+def delete_feed(id)
+  redis = settings.redis
+  if redis.sismember('freed:feeds', id)
+    redis.srem("freed:feeds", id)
+    redis.del("freed:#{id}")
+  end
 end
 
 def all_feeds
@@ -65,10 +79,10 @@ def send_email_verification(recipient, feed_id, feed_url)
     {feed_id: feed_id, feed_url: feed_url})
 end
 
-def send_update_email(feed_id)
+def send_update_email(feed_id, changes)
   feed = settings.redis.hgetall("freed:#{feed_id}")
   send_email( feed['notify_email'], 'feed_updated',
-    {feed_url: feed['feed_url']})
+    {feed_url: feed['feed_url'], changes: changes})
 end
 
 def send_email(recipient, template, locals)
@@ -107,17 +121,12 @@ end
 
 # UPDATE
 put '/feed/:id' do
-  changed = update_feed(params)
-  send_update_email(params[:id]) if changed
+  update_feed params[:id]
 end
 
 # DELETE
 delete '/feed/:id' do
-  redis = settings.redis
-  if redis.sismember('freed:feeds', params[:id])
-    redis.srem("freed:feeds", params[:id])
-    redis.del("freed:#{params[:id]}")
-  end
+  delete_feed params[:id]
 end
 
 get '/feed/verify/:id' do

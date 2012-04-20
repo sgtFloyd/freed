@@ -5,3 +5,10 @@
 ="\r\n"
 ="\r\n"
 ="Freed has detected a change on #{feed_url}."
+="\r\n"
+
+- changes.each do |c|
+  - if c.delete?
+    = "- #{c.delete}"
+  - if c.insert?
+    = "+ #{c.insert}"
