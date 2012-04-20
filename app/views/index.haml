@@ -74,7 +74,7 @@
           %tr{ id: feed_id }
             %td
               %a.feed_url{ href: feed['feed_url'], target: '_blank' }= feed['feed_url']
-            %td= feed['notify_email']
+            %td= feed['notify_email'].split('@')[0] + '@...'
             %td= feed['email_verified'] == 'true' ? "Yes" : "<b>No</b>"
             %td= feed['frequency'] + (feed['frequency'] == '1' ? ' minute' : ' minutes')
             %td{ 'data-last-digest' => feed['last_digest'] }

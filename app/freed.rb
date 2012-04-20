@@ -9,6 +9,8 @@ require 'time'
 require 'tlsmail'
 require 'yaml'
 
+VALID_EMAIL = /\w+@\w+\.\w+/
+
 def load_config(config, &block)
   yield YAML.load_file(config)
 end
@@ -25,7 +27,7 @@ end
 
 def save_feed(params)
   feed_page = open(params['feed_url']).read rescue nil
-  return unless feed_page
+  return unless feed_page && params['notify_email'] =~ VALID_EMAIL
   guid = SecureRandom.uuid
   settings.redis.hmset "freed:#{guid}",
     'feed_url',       params['feed_url'],
