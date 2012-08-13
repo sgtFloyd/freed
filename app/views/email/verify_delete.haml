@@ -1,0 +1,9 @@
+="From: Freed <#{from}>"
+="To: #{to}"
+="Subject: Please verify your Freed removal"
+="Date: #{Time.now.rfc2822}"
+="\r\n"
+="\r\n"
+="Someone has requested Freed notifications for #{feed_url} to be removed."
+Please click the following link to confirm this request:
+="http://freed.herokuapp.com/feed/delete/#{feed_id}?sig=#{feed_sig}"

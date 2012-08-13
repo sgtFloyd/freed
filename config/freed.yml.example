@@ -1,4 +1,5 @@
 :redis: redis://redistogo:password@bass.redistogo.com:1111
+:secret_hash_key: SECRET-HASH-KEY-123
 
 :gmail_user: freed.notifications
 :gmail_pass: gmail-password
