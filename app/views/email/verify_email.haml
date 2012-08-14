@@ -4,6 +4,15 @@
 ="Date: #{Time.now.rfc2822}"
 ="\r\n"
 ="\r\n"
-="You have requested email notifications for #{feed_url}."
+
+="You have requested Freed email notifications for #{feed_url}."
+="\r\n"
 Please click the following link to confirm this request:
-="http://freed.herokuapp.com/feed/#{feed_id}/verify?sig=#{feed_sig}"
+="#{FREED_URL}/feed/#{feed_id}/verify?sig=#{feed_sig}"
+="\r\n"
+Or click the following link to remove notifications for this feed:
+="#{FREED_URL}/feed/#{feed_id}/delete?sig=#{feed_sig}"
+
+="\r\n"
+\--
+="Freed #{FREED_URL}"

@@ -108,8 +108,10 @@ end
 
 def send_update_email(feed_id, changes)
   feed = settings.redis.hgetall("freed:#{feed_id}")
+  feed_sig = feed_signature(feed_id)
   send_email( feed['notify_email'], 'feed_updated',
-    {feed_url: feed['feed_url'], changes: changes})
+    {feed_url: feed['feed_url'], changes: changes,
+      feed_id: feed_id, feed_sig: feed_sig} )
 end
 
 def send_email(recipient, template, locals)
@@ -128,6 +130,7 @@ end
 
 configure do
   load_config 'config/freed.yml' do |conf|
+    FREED_URL = conf[:freed_url]
     redistogo = URI.parse conf[:redis]
     set :redis => Redis.new(:host => redistogo.host,
                             :port => redistogo.port,

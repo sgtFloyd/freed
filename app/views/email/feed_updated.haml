@@ -4,6 +4,7 @@
 ="Date: #{Time.now.rfc2822}"
 ="\r\n"
 ="\r\n"
+
 ="Freed has detected a change on #{feed_url}."
 ="\r\n"
 
@@ -15,3 +16,10 @@
   ="\r\n"
   ="--------------------"
   ="\r\n"
+
+="Click the following link to disable notifications for #{feed_url}"
+="#{FREED_URL}/feed/#{feed_id}/delete?sig=#{feed_sig}"
+
+="\r\n"
+\--
+="Freed #{FREED_URL}"
