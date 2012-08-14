@@ -28,7 +28,7 @@ end
 def save_feed(params)
   feed_page = open(params['feed_url']).read rescue nil
   return unless feed_page && params['notify_email'] =~ VALID_EMAIL
-  guid = SecureRandom.uuid
+  guid = SecureRandom.uuid[0...8]
   settings.redis.hmset "freed:#{guid}",
     'feed_url',       params['feed_url'],
     'notify_email',   params['notify_email'],
@@ -41,7 +41,8 @@ def save_feed(params)
   send_email_verification(params['notify_email'], guid, params['feed_url'])
 end
 
-def update_feed(id)
+def update_feed(id, sig)
+  return unless sig == feed_signature(id)
   feed = settings.redis.hgetall("freed:#{id}")
   feed_page = open(feed['feed_url']).read rescue nil
   return unless feed_page
@@ -87,7 +88,7 @@ def all_feeds
 end
 
 def feed_signature(id)
-  Digest::SHA1.hexdigest(id + settings.secret_hash_key)
+  Digest::SHA1.hexdigest(id + settings.secret_hash_key)[0...8]
 end
 
 # ============================== EMAILS ============================== #
@@ -149,7 +150,7 @@ end
 
 # UPDATE
 put '/feed/:id' do
-  update_feed params[:id]
+  update_feed params[:id], params[:sig]
 end
 
 # DELETE
@@ -157,13 +158,14 @@ delete '/feed/:id' do
   delete_feed params[:id], params[:sig]
 end
 
-
-get '/feed/verify/:id' do
+# Verify feed via email link
+get '/feed/:id/verify' do
   verify_feed params[:id], params[:sig]
   redirect '/'
 end
 
-get '/feed/delete/:id' do
+# Delete feed vie email link
+get '/feed/:id/delete' do
   delete_feed params[:id], params[:sig]
   redirect '/'
 end
