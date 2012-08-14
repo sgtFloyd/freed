@@ -23,7 +23,7 @@
           $.ajax({
             url: '/feed/' + feed_id,
             type: 'DELETE',
-            success: $('#'+feed_id).remove()
+            success: fade(feed_id)
           });
         });
 
@@ -32,6 +32,17 @@
           function(){ $(this).find('.delete').show(); },
           function(){ $(this).find('.delete').hide(); }
         );
+
+        // 'disable'
+        var fade = function(feed_id) {
+          $('tbody').append(
+            $('#'+feed_id).addClass('faded')
+              .find('.delete').remove().end()
+          );
+          alert('An email has been sent to '+
+            $('#'+feed_id+' .email').text()+
+            ' to confirm deletion.');
+        };
       });
 
     :css
@@ -43,6 +54,10 @@
         text-decoration: none;
         color: red;
         display: none;
+      }
+      .faded{
+        opacity: 0.4;
+        filter: alpha(opacity=40);
       }
 
   %body{ style: 'font-family:monospace' }
@@ -74,7 +89,7 @@
           %tr{ id: feed_id }
             %td
               %a.feed_url{ href: feed['feed_url'], target: '_blank' }= feed['feed_url']
-            %td= feed['notify_email'].split('@')[0] + '@...'
+            %td.email= feed['notify_email'].split('@')[0] + '@...'
             %td= feed['email_verified'] == 'true' ? "Yes" : "<b>No</b>"
             %td= feed['frequency'] + (feed['frequency'] == '1' ? ' minute' : ' minutes')
             %td{ 'data-last-digest' => feed['last_digest'] }
