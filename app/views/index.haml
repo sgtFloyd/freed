@@ -13,68 +13,22 @@
 %html
   %head
     %title Freed
-    %script{ type: 'text/javascript', src: 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js' }
+    %link{ href: 'freed.css', media: 'screen', rel: 'stylesheet', type: 'text/css' }
 
-    :javascript
-      $(document).ready(function() {
-        // delete feeds
-        $('.delete').click(function(){
-          var feed_id = $(this).closest('tr').attr('id');
-          $.ajax({
-            url: '/feed/' + feed_id,
-            type: 'DELETE',
-            success: fade(feed_id)
-          });
-        });
-
-        // show delete link on hover
-        $('tr').hover(
-          function(){ $(this).find('.delete').show(); },
-          function(){ $(this).find('.delete').hide(); }
-        );
-
-        // 'disable'
-        var fade = function(feed_id) {
-          $('tbody').append(
-            $('#'+feed_id).addClass('faded')
-              .find('.delete').remove().end()
-          );
-          alert('An email has been sent to '+
-            $('#'+feed_id+' .email').text()+
-            ' to confirm deletion.');
-        };
-      });
-
-    :css
-      td, th{padding: 0px 25px}
-      .feed_url{
-        text-decoration: none;
-      }
-      .delete{
-        text-decoration: none;
-        color: red;
-        display: none;
-      }
-      .faded{
-        opacity: 0.4;
-        filter: alpha(opacity=40);
-      }
-
-  %body{ style: 'font-family:monospace' }
-
+  %body
     %p
       %form{ action: '/feed', method: :post }
         %input{ type: 'text', name: 'feed_url', placeholder: 'Feed Url', size: 50 }
         %input{ type: 'text', name: 'notify_email', placeholder: 'Your Email', size: 50 }
         %select{ name: 'frequency' }
           %option{ disabled: true, selected: true } Frequency
-          %option{ value: 1   } &nbsp;&nbsp; 1 minute
-          %option{ value: 2   } &nbsp;&nbsp; 2 minutes
-          %option{ value: 5   } &nbsp;&nbsp; 5 minutes
-          %option{ value: 10  } &nbsp;&nbsp; 10 minutes
-          %option{ value: 30  } &nbsp;&nbsp; 30 minutes
-          %option{ value: 60  } &nbsp;&nbsp; 1 hour
-          %option{ value: 1440} &nbsp;&nbsp; 24 hours
+          %option{ value: 1    } &nbsp;&nbsp; 1 minute
+          %option{ value: 2    } &nbsp;&nbsp; 2 minutes
+          %option{ value: 5    } &nbsp;&nbsp; 5 minutes
+          %option{ value: 10   } &nbsp;&nbsp; 10 minutes
+          %option{ value: 30   } &nbsp;&nbsp; 30 minutes
+          %option{ value: 60   } &nbsp;&nbsp; 1 hour
+          %option{ value: 1440 } &nbsp;&nbsp; 24 hours
         %input{ type: 'submit' }
 
     %p
@@ -96,4 +50,7 @@
               = time_ago(feed['last_checked']) + " ago"
             %td
               %a.delete{ href:'javascript:' } delete
+  %footer
+    %script{ type: 'text/javascript', src: 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js' }
+    %script{ type: 'text/javascript', src: 'freed.js' }
 

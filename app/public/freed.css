@@ -1,0 +1,22 @@
+body {
+  font-family: monospace;
+}
+
+td, th {
+  padding: 0px 25px;
+}
+
+.feed_url {
+  text-decoration: none;
+}
+
+.delete {
+  text-decoration: none;
+  color: red;
+  display: none;
+}
+
+.faded {
+  opacity: 0.4;
+  filter: alpha(opacity=40);
+}
