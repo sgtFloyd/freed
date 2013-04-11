@@ -10,7 +10,7 @@ class Feed
 
   private_class_method :new
 
-  VALID_EMAIL = /\A\w+@\w+\.\w+\Z/
+  VALID_EMAIL = /\A[\w+]+@\w+\.\w+\Z/
 
   def initialize(params={})
     params = {frequency: 5}.merge(params) # default values
@@ -23,15 +23,15 @@ class Feed
     params[:id] = SecureRandom.uuid[0...8]
     params[:email_verified] = false
     params[:last_checked] = Time.now.to_i
-    feed = new(params)
+    new(params)
   end
 
   def page_content
-    @page_content ||= open(self.feed_url).read rescue nil
+    @_page_content ||= open(self.feed_url).read rescue nil
   end
 
   def page_digest
-    @page_digest ||= Digest::SHA1.hexdigest(self.page_content) rescue nil
+    @_page_digest ||= Digest::SHA1.hexdigest(self.page_content) rescue nil
   end
 
   def persisted?
