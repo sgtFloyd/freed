@@ -9,36 +9,15 @@ require 'time'
 require 'tlsmail'
 require 'yaml'
 
-VALID_EMAIL = /\w+@\w+\.\w+/
+load 'app/models/feed.rb'
 
 def load_config(config, &block)
   yield YAML.load_file(config)
 end
 
-# feeds stored in redis hash:
-#   feed_id => {
-#     feed_url:       string
-#     notify_email:   string
-#     email_verified: 0/1
-#     frequency:      int (in minutes)
-#     last_checked:   int (in seconds since epoch)
-#     last_hash:      hex digest of last page load
-#   }
-
 def save_feed(params)
-  feed_page = open(params['feed_url']).read rescue nil
-  return unless feed_page && params['notify_email'] =~ VALID_EMAIL
-  guid = SecureRandom.uuid[0...8]
-  settings.redis.hmset "freed:#{guid}",
-    'feed_url',       params['feed_url'],
-    'notify_email',   params['notify_email'],
-    'email_verified', false,
-    'frequency',      params['frequency'] || 5,
-    'last_checked',   Time.now.to_i,
-    'last_content',   feed_page,
-    'last_digest',    Digest::SHA1.hexdigest(feed_page)
-  settings.redis.sadd "freed:feeds", guid
-  send_email_verification(params['notify_email'], guid, params['feed_url'])
+  feed = Feed.create(params)
+  send_email_verification(feed.notify_email, feed.id, feed.feed_url) if feed.save
 end
 
 def update_feed(id, sig)
