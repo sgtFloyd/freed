@@ -38,6 +38,12 @@ class Feed
     load_from_redis(id)
   end
 
+  def changes
+    return if self.page_digest == self.last_digest
+    diff = Differ.diff_by_line(self.page_content, self.last_content)
+    diff.instance_variable_get(:@raw).select{|r| r.is_a?(Differ::Change)}
+  end
+
   def destroy
     remove_from_redis
   end

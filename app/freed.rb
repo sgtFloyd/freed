@@ -21,22 +21,10 @@ def save_feed(params)
 end
 
 def update_feed(id, sig)
-  return unless sig == feed_signature(id)
-  feed = settings.redis.hgetall("freed:#{id}")
-  feed_page = open(feed['feed_url']).read rescue nil
-  return unless feed_page
-  old_cont, old_hash = feed['last_content'], feed['last_digest']
-  new_cont, new_hash = feed_page, Digest::SHA1.hexdigest(feed_page)
-
-  settings.redis.hmset "freed:#{id}",
-    'last_checked', Time.now.to_i,
-    'last_content', new_cont,
-    'last_digest',  new_hash
-  if old_hash != new_hash
-    diff = Differ.diff_by_line(new_cont, old_cont)
-    changes = diff.instance_variable_get(:@raw).select{|r| Differ::Change === r}
-    send_update_email(id, changes)
-  end
+  return unless feed = Feed.find(id, sig)
+  send_update_email(id, feed.changes) if feed.changes
+  feed.last_checked = Time.now.to_i
+  feed.save
 end
 
 def delete_feed(id, sig)
