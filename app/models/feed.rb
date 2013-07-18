@@ -10,6 +10,7 @@ class Feed
 
   private_class_method :new
 
+  FEED_INDEX = "freed:feeds"
   VALID_EMAIL = /\A[\w+]+@\w+\.\w+\Z/
 
   def initialize(params={})
@@ -20,11 +21,9 @@ class Feed
   end
 
   def self.all
-    feed_ids = settings.redis.smembers("freed:feeds")
-    feeds = feed_ids.inject({}) do |feeds, feed_id|
-      feeds[feed_id] = settings.redis.hgetall("freed:#{feed_id}"); feeds
-    end
-    Hash[feeds.sort_by{|id, feed| -feed['last_checked'].to_i}]
+    feed_ids = settings.redis.smembers(FEED_INDEX)
+    feeds = feed_ids.map(&method(:load_from_redis))
+    feeds.sort_by{|feed| -feed.last_checked.to_i}
   end
 
   def self.create(params={})
@@ -52,7 +51,7 @@ class Feed
   end
 
   def persisted?
-    settings.redis.sismember('freed:feeds', self.id)
+    settings.redis.sismember(FEED_INDEX, self.id)
   end
 
   def new_record?
@@ -79,7 +78,7 @@ class Feed
 private
 
   def self.load_from_redis(id)
-    return unless settings.redis.sismember('freed:feeds', id)
+    return unless settings.redis.sismember(FEED_INDEX, id)
     new settings.redis.hgetall("freed:#{id}").merge(id: id)
   end
 
@@ -88,7 +87,7 @@ private
   end
 
   def remove_from_redis
-    settings.redis.srem "freed:feeds", self.id
+    settings.redis.srem FEED_INDEX, self.id
     settings.redis.del "freed:#{self.id}"
   end
 
@@ -101,7 +100,7 @@ private
       'last_checked',   self.last_checked,
       'last_content',   self.page_content,
       'last_digest',    self.page_digest
-    settings.redis.sadd "freed:feeds", self.id
+    settings.redis.sadd FEED_INDEX, self.id
   end
 
 end
