@@ -40,12 +40,8 @@ def update_feed(id, sig)
 end
 
 def delete_feed(id, sig)
-  if sig == feed_signature(id)
-    redis = settings.redis
-    if redis.sismember('freed:feeds', id)
-      redis.srem("freed:feeds", id)
-      redis.del("freed:#{id}")
-    end
+  if feed = Feed.find(id, sig)
+    feed.destroy
   else
     send_delete_verification_email(id)
   end
@@ -57,13 +53,6 @@ def verify_feed(id, sig)
   if redis.sismember('freed:feeds', id)
     redis.hset("freed:#{id}", 'email_verified', true)
   end
-end
-
-def all_feeds
-  redis = settings.redis
-  Hash[redis.smembers("freed:feeds").inject({}) do |feeds, feed_id|
-    feeds[feed_id] = redis.hgetall("freed:#{feed_id}"); feeds
-  end.sort_by{|id, feed| -feed['last_checked'].to_i}]
 end
 
 def feed_signature(id)
@@ -121,7 +110,7 @@ configure do
 end
 
 get '/' do
-  haml :index, :locals => { :feeds => all_feeds }
+  haml :index, :locals => { :feeds => Feed.all }
 end
 
 # CREATE

@@ -19,11 +19,28 @@ class Feed
     end
   end
 
+  def self.all
+    feed_ids = settings.redis.smembers("freed:feeds")
+    feeds = feed_ids.inject({}) do |feeds, feed_id|
+      feeds[feed_id] = settings.redis.hgetall("freed:#{feed_id}"); feeds
+    end
+    Hash[feeds.sort_by{|id, feed| -feed['last_checked'].to_i}]
+  end
+
   def self.create(params={})
     params[:id] = SecureRandom.uuid[0...8]
     params[:email_verified] = false
     params[:last_checked] = Time.now.to_i
     new(params)
+  end
+
+  def self.find(id, sig)
+    return unless sign(id) == sig
+    load_from_redis(id)
+  end
+
+  def destroy
+    remove_from_redis
   end
 
   def page_content
@@ -49,6 +66,10 @@ class Feed
     # send_verification_email if new_feed
   end
 
+  def signature
+    sign(self.id)
+  end
+
   def valid?
     return false unless self.notify_email =~ VALID_EMAIL
     return false unless self.page_content
@@ -56,6 +77,20 @@ class Feed
   end
 
 private
+
+  def self.load_from_redis(id)
+    return unless settings.redis.sismember('freed:feeds', id)
+    new settings.redis.hgetall("freed:#{id}").merge(id: id)
+  end
+
+  def self.sign(id, length=8)
+    Digest::SHA1.hexdigest([id, settings.secret_hash_key].join)[0, length]
+  end
+
+  def remove_from_redis
+    settings.redis.srem "freed:feeds", self.id
+    settings.redis.del "freed:#{self.id}"
+  end
 
   def save_to_redis
     settings.redis.hmset "freed:#{self.id}",
