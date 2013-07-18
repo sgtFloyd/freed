@@ -47,7 +47,7 @@ class Feed
   end
 
   def page_digest
-    @_page_digest ||= Digest::SHA1.hexdigest(self.page_content) rescue nil
+    Digest::SHA1.hexdigest(self.page_content) rescue nil
   end
 
   def persisted?

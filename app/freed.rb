@@ -48,11 +48,9 @@ def delete_feed(id, sig)
 end
 
 def verify_feed(id, sig)
-  return unless sig == feed_signature(id)
-  redis = settings.redis
-  if redis.sismember('freed:feeds', id)
-    redis.hset("freed:#{id}", 'email_verified', true)
-  end
+  return unless feed = Feed.find(id, sig)
+  feed.email_verified = true
+  feed.save
 end
 
 def feed_signature(id)
