@@ -15,11 +15,6 @@ def load_config(config, &block)
   yield YAML.load_file(config)
 end
 
-def save_feed(params)
-  feed = Feed.create(params)
-  send_email_verification(feed.notify_email, feed.id, feed.feed_url) if feed.save
-end
-
 def update_feed(id, sig)
   return unless feed = Feed.find(id, sig)
   send_update_email(id, feed.changes) if feed.changes
@@ -46,12 +41,6 @@ def feed_signature(id)
 end
 
 # ============================== EMAILS ============================== #
-
-def send_email_verification(recipient, feed_id, feed_url)
-  feed_sig = feed_signature(feed_id)
-  send_email( recipient, 'verify_email',
-    {feed_id: feed_id, feed_url: feed_url, feed_sig: feed_sig} )
-end
 
 def send_delete_verification_email(feed_id)
   feed = settings.redis.hgetall("freed:#{feed_id}")
@@ -101,7 +90,7 @@ end
 
 # CREATE
 post '/feed' do
-  save_feed params
+  Feed.create(params).save
   redirect '/'
 end
 

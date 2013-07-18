@@ -38,6 +38,10 @@ class Feed
     load_from_redis(id)
   end
 
+  def self.sign(id, length=8)
+    Digest::SHA1.hexdigest([id, settings.secret_hash_key].join)[0, length]
+  end
+
   def changes
     return if self.page_digest == self.last_digest
     diff = Differ.diff_by_line(self.page_content, self.last_content)
@@ -68,11 +72,11 @@ class Feed
     return unless valid?
     new_feed = self.new_record?
     save_to_redis
-    # send_verification_email if new_feed
+    send_verification_email if new_feed
   end
 
   def signature
-    sign(self.id)
+    Feed.sign(self.id)
   end
 
   def valid?
@@ -86,10 +90,6 @@ private
   def self.load_from_redis(id)
     return unless settings.redis.sismember(FEED_INDEX, id)
     new settings.redis.hgetall("freed:#{id}").merge(id: id)
-  end
-
-  def self.sign(id, length=8)
-    Digest::SHA1.hexdigest([id, settings.secret_hash_key].join)[0, length]
   end
 
   def remove_from_redis
@@ -107,6 +107,10 @@ private
       'last_content',   self.page_content,
       'last_digest',    self.page_digest
     settings.redis.sadd FEED_INDEX, self.id
+  end
+
+  def send_verification_email
+    send_email self.notify_email, :verify_email, {feed: self}
   end
 
 end

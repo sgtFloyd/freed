@@ -5,13 +5,13 @@
 ="\r\n"
 ="\r\n"
 
-="You have requested Freed email notifications for #{feed_url}."
+="You have requested Freed email notifications for #{feed.feed_url}."
 ="\r\n"
 Please click the following link to confirm this request:
-="#{FREED_URL}/feed/#{feed_id}/verify?sig=#{feed_sig}"
+="#{FREED_URL}/feed/#{feed.id}/verify?sig=#{feed.signature}"
 ="\r\n"
 Or click the following link to remove notifications for this feed:
-="#{FREED_URL}/feed/#{feed_id}/delete?sig=#{feed_sig}"
+="#{FREED_URL}/feed/#{feed.id}/delete?sig=#{feed.signature}"
 
 ="\r\n"
 \--
