@@ -34,6 +34,14 @@ class Feed
     new(params).tap(&:save)
   end
 
+  def self.destroy(id, sig)
+    if feed = Feed.find(id, sig)
+      feed.destroy
+    elsif feed = load_from_redis(id)
+      feed.send_delete_verification_email
+    end
+  end
+
   def self.find(id, sig)
     return unless sign(id) == sig
     load_from_redis(id)
@@ -76,6 +84,18 @@ class Feed
     send_verification_email if new_feed
   end
 
+  def send_delete_verification_email
+    send_email self.notify_email, :verify_delete, {feed: self}
+  end
+
+  def send_update_email
+    send_email self.notify_email, :feed_updated, {feed: self}
+  end
+
+  def send_verification_email
+    send_email self.notify_email, :verify_email, {feed: self}
+  end
+
   def signature
     Feed.sign(self.id)
   end
@@ -90,6 +110,11 @@ class Feed
     return false unless self.notify_email =~ VALID_EMAIL
     return false unless self.page_content
     true
+  end
+
+  def verify
+    self.email_verified = true
+    self.save
   end
 
 private
@@ -114,15 +139,6 @@ private
       'last_content',   self.page_content,
       'last_digest',    self.page_digest
     settings.redis.sadd FEED_INDEX, self.id
-  end
-
-
-  def send_update_email
-    send_email self.notify_email, :feed_updated, {feed: self}
-  end
-
-  def send_verification_email
-    send_email self.notify_email, :verify_email, {feed: self}
   end
 
 end
