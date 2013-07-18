@@ -38,7 +38,7 @@ class Feed
     if feed = Feed.find(id, sig)
       feed.destroy
     elsif feed = load_from_redis(id)
-      feed.send_delete_verification_email
+      feed.send_email(:verify_delete)
     end
   end
 
@@ -81,19 +81,11 @@ class Feed
     return unless valid?
     new_feed = self.new_record?
     save_to_redis
-    send_verification_email if new_feed
+    send_email(:verify_email) if new_feed
   end
 
-  def send_delete_verification_email
-    send_email self.notify_email, :verify_delete, {feed: self}
-  end
-
-  def send_update_email
-    send_email self.notify_email, :feed_updated, {feed: self}
-  end
-
-  def send_verification_email
-    send_email self.notify_email, :verify_email, {feed: self}
+  def send_email(type)
+    send_email self.notify_email, type, {feed: self}
   end
 
   def signature
@@ -101,7 +93,7 @@ class Feed
   end
 
   def update
-    send_update_email if self.changes
+    send_email(:feed_updated) if self.changes
     self.last_checked = Time.now.to_i
     self.save
   end
