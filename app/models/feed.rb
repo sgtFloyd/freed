@@ -12,9 +12,10 @@ class Feed
 
   FEED_INDEX = "freed:feeds"
   VALID_EMAIL = /\A[\w+]+@\w+\.\w+\Z/
+  DEFAULTS = { frequency: 5 }.freeze
 
   def initialize(params={})
-    params = {frequency: 5}.merge(params) # default values
+    params = DEFAULTS.merge(params)
     params.each do |param, value|
       send("#{param}=", value)
     end
@@ -30,7 +31,7 @@ class Feed
     params[:id] = SecureRandom.uuid[0...8]
     params[:email_verified] = false
     params[:last_checked] = Time.now.to_i
-    new(params)
+    new(params).tap(&:save)
   end
 
   def self.find(id, sig)
@@ -79,6 +80,12 @@ class Feed
     Feed.sign(self.id)
   end
 
+  def update
+    send_update_email if self.changes
+    self.last_checked = Time.now.to_i
+    self.save
+  end
+
   def valid?
     return false unless self.notify_email =~ VALID_EMAIL
     return false unless self.page_content
@@ -107,6 +114,11 @@ private
       'last_content',   self.page_content,
       'last_digest',    self.page_digest
     settings.redis.sadd FEED_INDEX, self.id
+  end
+
+
+  def send_update_email
+    send_email self.notify_email, :feed_updated, {feed: self}
   end
 
   def send_verification_email

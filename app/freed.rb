@@ -15,13 +15,6 @@ def load_config(config, &block)
   yield YAML.load_file(config)
 end
 
-def update_feed(id, sig)
-  return unless feed = Feed.find(id, sig)
-  send_update_email(id, feed.changes) if feed.changes
-  feed.last_checked = Time.now.to_i
-  feed.save
-end
-
 def delete_feed(id, sig)
   if feed = Feed.find(id, sig)
     feed.destroy
@@ -47,14 +40,6 @@ def send_delete_verification_email(feed_id)
   feed_sig = feed_signature(feed_id)
   send_email(feed['notify_email'], 'verify_delete',
     {feed_id: feed_id, feed_url: feed['feed_url'], feed_sig: feed_sig} )
-end
-
-def send_update_email(feed_id, changes)
-  feed = settings.redis.hgetall("freed:#{feed_id}")
-  feed_sig = feed_signature(feed_id)
-  send_email( feed['notify_email'], 'feed_updated',
-    {feed_url: feed['feed_url'], changes: changes,
-      feed_id: feed_id, feed_sig: feed_sig} )
 end
 
 def send_email(recipient, template, locals)
@@ -90,13 +75,13 @@ end
 
 # CREATE
 post '/feed' do
-  Feed.create(params).save
+  Feed.create(params)
   redirect '/'
 end
 
 # UPDATE
 put '/feed/:id' do
-  update_feed params[:id], params[:sig]
+  Feed.find(params[:id], params[:sig]).try(&:update)
 end
 
 # DELETE

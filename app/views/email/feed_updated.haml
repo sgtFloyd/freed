@@ -5,10 +5,10 @@
 ="\r\n"
 ="\r\n"
 
-="Freed has detected a change on #{feed_url}."
+="Freed has detected a change on #{feed.feed_url}."
 ="\r\n"
 
-- changes.each do |c|
+- feed.changes.each do |c|
   - if c.delete?
     = "- #{c.delete}"
   - if c.insert?
@@ -17,8 +17,8 @@
   ="--------------------"
   ="\r\n"
 
-="Click the following link to disable notifications for #{feed_url}"
-="#{FREED_URL}/feed/#{feed_id}/delete?sig=#{feed_sig}"
+="Click the following link to disable notifications for #{feed.feed_url}"
+="#{FREED_URL}/feed/#{feed.id}/delete?sig=#{feed.signature}"
 
 ="\r\n"
 \--
