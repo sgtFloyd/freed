@@ -36,7 +36,8 @@ end
 # UPDATE
 put '/feed/:id' do
   id, sig = params[:id], params[:sig]
-  Feed.find(id, sig).try(:update)
+  feed = Feed.find(id, sig)
+  feed.update if feed
 end
 
 # DELETE
@@ -47,7 +48,8 @@ end
 # Verify feed via email link
 get '/feed/:id/verify' do
   id, sig = params[:id], params[:sig]
-  Feed.find(id, sig).try(:verify)
+  feed = Feed.find(id, sig)
+  feed.verify if feed
   redirect '/'
 end
 
