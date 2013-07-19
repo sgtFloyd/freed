@@ -57,14 +57,16 @@ get '/feed/:id/delete' do
   redirect '/'
 end
 
-def send_email(recipient, template, locals)
-  from = settings.gmail_user + '@gmail.com'
-  content = Haml::Engine.new( File.open("app/views/email/#{template}.haml").read )
-            .render( Object.new, locals.merge(:to => recipient, :from => from) )
-  Net::SMTP.enable_tls(OpenSSL::SSL::VERIFY_NONE)
-  Net::SMTP.start('smtp.gmail.com', 587, 'gmail.com', from, settings.gmail_pass, :login) do |smtp|
-    smtp.send_message(content, from, recipient)
+class Email
+  def self.send(recipient, template, locals)
+    from = settings.gmail_user + '@gmail.com'
+    content = Haml::Engine.new( File.open("app/views/email/#{template}.haml").read )
+              .render( Object.new, locals.merge(:to => recipient, :from => from) )
+    Net::SMTP.enable_tls(OpenSSL::SSL::VERIFY_NONE)
+    Net::SMTP.start('smtp.gmail.com', 587, 'gmail.com', from, settings.gmail_pass, :login) do |smtp|
+      smtp.send_message(content, from, recipient)
+    end
+  rescue => e
+    puts "Failure sending email: #{e}"
   end
-rescue => e
-  puts "Failure sending email: #{e}"
 end

@@ -85,7 +85,7 @@ class Feed
   end
 
   def send_email(type)
-    send_email self.notify_email, type, {feed: self}
+    Email.send self.notify_email, type, {feed: self}
   end
 
   def signature
