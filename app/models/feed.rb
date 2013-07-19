@@ -61,6 +61,10 @@ class Feed
     remove_from_redis
   end
 
+  def email_verified?
+    self.email_verified == 'true'
+  end
+
   def page_content
     @_page_content ||= open(self.feed_url).read rescue nil
   end
@@ -125,7 +129,7 @@ private
     settings.redis.hmset "freed:#{self.id}",
       'feed_url',       self.feed_url,
       'notify_email',   self.notify_email,
-      'email_verified', self.email_verified,
+      'email_verified', self.email_verified?,
       'frequency',      self.frequency,
       'last_checked',   self.last_checked,
       'last_content',   self.page_content,
