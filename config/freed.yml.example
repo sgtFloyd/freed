@@ -1,4 +1,4 @@
-:freed_url: http://freed.herokuapp.com
+:freed_url: http://freed.sgtfloyd.com
 :redis: redis://redistogo:password@bass.redistogo.com:1111
 :secret_hash_key: SECRET-HASH-KEY-123
 
