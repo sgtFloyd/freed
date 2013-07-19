@@ -2,16 +2,15 @@ body {
   font-family: monospace;
 }
 
-td, th {
-  padding: 0px 25px;
+a {
+  text-decoration: none;
 }
 
-.feed_url {
-  text-decoration: none;
+td, th, .new_feed {
+  padding: 0 25px;
 }
 
 .delete {
-  text-decoration: none;
   color: red;
   display: none;
 }

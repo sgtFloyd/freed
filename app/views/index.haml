@@ -16,7 +16,7 @@
     %link{ href: 'freed.css', media: 'screen', rel: 'stylesheet', type: 'text/css' }
 
   %body
-    %p
+    .new_feed
       %form{ action: '/feed', method: :post }
         %input{ type: 'text', name: 'feed_url', placeholder: 'Feed Url', size: 50 }
         %input{ type: 'text', name: 'notify_email', placeholder: 'Your Email', size: 50 }
