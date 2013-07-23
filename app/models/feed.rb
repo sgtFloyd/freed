@@ -1,6 +1,7 @@
 class Feed
   attr_accessor :id,
                 :feed_url,        # URL of the page to check
+                :css_selector,    # Portion of the page to watch for changes
                 :notify_email,    # Email address to notify when this feed's page changes
                 :email_verified,  # Whether notify_email has been verified
                 :frequency,       # How often feed's page is checked (in minutes)
@@ -128,6 +129,7 @@ private
   def save_to_redis
     settings.redis.hmset "freed:#{self.id}",
       'feed_url',       self.feed_url,
+      'css_selector',   self.css_selector,
       'notify_email',   self.notify_email,
       'email_verified', self.email_verified?,
       'frequency',      self.frequency,

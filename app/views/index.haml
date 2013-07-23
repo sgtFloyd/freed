@@ -19,6 +19,7 @@
     .new_feed
       %form{ action: '/feed', method: :post }
         %input{ type: 'text', name: 'feed_url', placeholder: 'Feed Url', size: 50 }
+        // %input{ type: 'text', name: 'css_selector', placeholder: 'CSS Selector', size: 25 }
         %input{ type: 'text', name: 'notify_email', placeholder: 'Your Email', size: 50 }
         %select{ name: 'frequency' }
           %option{ disabled: true, selected: true } Frequency
@@ -43,6 +44,8 @@
           %tr{ id: feed.id }
             %td
               %a{ href: feed.feed_url, target: '_blank' }= feed.feed_url
+              - if feed.css_selector
+                %i.faded #{feed.css_selector}
             %td= feed.notify_email.split('@')[0] + '@...'
             %td= feed.email_verified? ? "Yes" : "<b>No</b>"
             %td= feed.frequency + (feed.frequency == '1' ? ' minute' : ' minutes')
