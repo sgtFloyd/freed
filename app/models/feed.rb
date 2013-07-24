@@ -110,7 +110,7 @@ class Feed
   end
 
   def verify
-    self.email_verified = true
+    self.email_verified = 'true'
     self.save
   end
 
