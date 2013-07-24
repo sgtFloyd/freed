@@ -54,7 +54,10 @@ class Feed
 
   def changes
     return if self.page_digest == self.last_digest
-    diff = Differ.diff_by_line(self.page_content, self.last_content)
+    diff = Differ.diff_by_line(
+      self.page_content.force_encoding('binary'),
+      self.last_content.force_encoding('binary')
+    )
     diff.instance_variable_get(:@raw).select{|r| r.is_a?(Differ::Change)}
   end
 
