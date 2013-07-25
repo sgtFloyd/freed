@@ -1,10 +1,6 @@
-body {
-  font-family: monospace;
-}
-
-a {
-  text-decoration: none;
-}
+body { font-family: monospace; }
+a { text-decoration: none; }
+.none { display: none; }
 
 td, th, .new_feed {
   padding: 0 25px;
