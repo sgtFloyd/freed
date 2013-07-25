@@ -9,6 +9,11 @@ $(document).ready(function() {
     });
   });
 
+  $('.show_advanced').click(function(){
+    $('.show_advanced').hide();
+    $('.advanced').show();
+  })
+
   // show delete link on hover
   $('tr').hover(
     function(){ $(this).find('.delete').show(); },

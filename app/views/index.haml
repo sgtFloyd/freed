@@ -18,18 +18,20 @@
   %body
     %form.new_feed{ action: '/feed', method: :post }
       %input{ type: 'text', name: 'feed_url', placeholder: 'Feed Url', size: 50 }
-      %input.none{ type: 'text', name: 'css_selector', placeholder: 'CSS Selector', size: 25 }
       %input{ type: 'text', name: 'notify_email', placeholder: 'Your Email', size: 50 }
-      %select{ name: 'frequency' }
-        %option{ disabled: true, selected: true } Frequency
-        %option{ value: 1    } &nbsp;&nbsp; 1 minute
-        %option{ value: 2    } &nbsp;&nbsp; 2 minutes
-        %option{ value: 5    } &nbsp;&nbsp; 5 minutes
-        %option{ value: 10   } &nbsp;&nbsp; 10 minutes
-        %option{ value: 30   } &nbsp;&nbsp; 30 minutes
-        %option{ value: 60   } &nbsp;&nbsp; 1 hour
-        %option{ value: 1440 } &nbsp;&nbsp; 24 hours
+      %a.show_advanced{ :href => 'javascript:' }= "[+]"
       %input{ type: 'submit' }
+      .advanced.none
+        %input{ type: 'text', name: 'css_selector', placeholder: 'CSS Selector', size: 50 }
+        %select{ name: 'frequency' }
+          %option{ disabled: true, selected: true } Frequency
+          %option{ value: 1    } &nbsp;&nbsp; 1 minute
+          %option{ value: 2    } &nbsp;&nbsp; 2 minutes
+          %option{ value: 5    } &nbsp;&nbsp; 5 minutes
+          %option{ value: 10   } &nbsp;&nbsp; 10 minutes
+          %option{ value: 30   } &nbsp;&nbsp; 30 minutes
+          %option{ value: 60   } &nbsp;&nbsp; 1 hour
+          %option{ value: 1440 } &nbsp;&nbsp; 24 hours
 
     %p
       %table
