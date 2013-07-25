@@ -72,7 +72,7 @@ class Feed
   def page_content
     if self.css_selector
       @_document ||= Nokogiri::HTML open(self.feed_url).read
-      @_page_content ||= @document.css(self.css_selector).to_s
+      @_page_content ||= @_document.css(self.css_selector).to_s
     else
       @_page_content ||= open(self.feed_url).read
     end
