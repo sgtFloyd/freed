@@ -1,6 +1,7 @@
 require 'differ'
 require 'digest'
 require 'haml'
+require 'nokogiri'
 require 'open-uri'
 require 'redis'
 require 'securerandom'

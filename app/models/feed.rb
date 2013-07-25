@@ -70,11 +70,16 @@ class Feed
   end
 
   def page_content
-    @_page_content ||= open(self.feed_url).read rescue nil
+    if self.css_selector
+      @_document ||= Nokogiri::HTML open(self.feed_url).read
+      @_page_content ||= @document.css(self.css_selector).to_s
+    else
+      @_page_content ||= open(self.feed_url).read
+    end
   end
 
   def page_digest
-    Digest::SHA1.hexdigest(self.page_content) rescue nil
+    Digest::SHA1.hexdigest(self.page_content)
   end
 
   def persisted?
