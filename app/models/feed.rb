@@ -23,7 +23,7 @@ class Feed
   end
 
   def self.all
-    feed_ids = settings.redis.smembers(FEED_INDEX)
+    feed_ids = $settings.redis.smembers(FEED_INDEX)
     feeds = feed_ids.map(&method(:load_from_redis))
     feeds.sort_by{|feed| -feed.last_checked.to_i}
   end
@@ -49,7 +49,7 @@ class Feed
   end
 
   def self.sign(id, length=8)
-    Digest::SHA1.hexdigest([id, settings.secret_hash_key].join)[0, length]
+    Digest::SHA1.hexdigest([id, $settings.secret_hash_key].join)[0, length]
   end
 
   def changes
@@ -83,7 +83,7 @@ class Feed
   end
 
   def persisted?
-    settings.redis.sismember(FEED_INDEX, self.id)
+    $settings.redis.sismember(FEED_INDEX, self.id)
   end
 
   def new_record?
@@ -125,17 +125,17 @@ class Feed
 private
 
   def self.load_from_redis(id)
-    return unless settings.redis.sismember(FEED_INDEX, id)
-    new settings.redis.hgetall("freed:#{id}").merge(id: id)
+    return unless $settings.redis.sismember(FEED_INDEX, id)
+    new $settings.redis.hgetall("freed:#{id}").merge(id: id)
   end
 
   def remove_from_redis
-    settings.redis.srem FEED_INDEX, self.id
-    settings.redis.del "freed:#{self.id}"
+    $settings.redis.srem FEED_INDEX, self.id
+    $settings.redis.del "freed:#{self.id}"
   end
 
   def save_to_redis
-    settings.redis.hmset "freed:#{self.id}",
+    $settings.redis.hmset "freed:#{self.id}",
       'feed_url',       self.feed_url,
       'css_selector',   self.css_selector,
       'notify_email',   self.notify_email,
@@ -144,7 +144,7 @@ private
       'last_checked',   self.last_checked,
       'last_content',   self.page_content,
       'last_digest',    self.page_digest
-    settings.redis.sadd FEED_INDEX, self.id
+    $settings.redis.sadd FEED_INDEX, self.id
   end
 
 end

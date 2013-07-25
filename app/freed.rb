@@ -23,6 +23,7 @@ configure do
       :gmail_pass => conf[:gmail_pass],
       :secret_hash_key => conf[:secret_hash_key]
 end
+$settings = settings
 
 get '/' do
   haml :index, :locals => { :feeds => Feed.all }
@@ -62,11 +63,11 @@ end
 
 class Email
   def self.send(recipient, template, locals)
-    from = settings.gmail_user + '@gmail.com'
+    from = $settings.gmail_user + '@gmail.com'
     content = Haml::Engine.new( File.open("app/views/email/#{template}.haml").read )
               .render( Object.new, locals.merge(:to => recipient, :from => from) )
     Net::SMTP.enable_tls(OpenSSL::SSL::VERIFY_NONE)
-    Net::SMTP.start('smtp.gmail.com', 587, 'gmail.com', from, settings.gmail_pass, :login) do |smtp|
+    Net::SMTP.start('smtp.gmail.com', 587, 'gmail.com', from, $settings.gmail_pass, :login) do |smtp|
       smtp.send_message(content, from, recipient)
     end
   rescue => e
