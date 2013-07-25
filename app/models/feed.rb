@@ -70,7 +70,7 @@ class Feed
   end
 
   def page_content
-    if self.css_selector
+    if self.css_selector && !self.css_selector.empty?
       @_document ||= Nokogiri::HTML open(self.feed_url).read
       @_page_content ||= @_document.css(self.css_selector).to_s
     else
