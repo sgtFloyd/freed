@@ -1,13 +1,11 @@
-require 'differ'
+require 'bundler'
+Bundler.require
+
 require 'digest'
-require 'haml'
 require 'nokogiri'
 require 'open-uri'
-require 'redis'
 require 'securerandom'
-require 'sinatra'
 require 'time'
-require 'tlsmail'
 require 'yaml'
 
 load 'app/models/feed.rb'

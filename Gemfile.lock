@@ -25,6 +25,7 @@ GEM
     minitest (5.3.3)
     nokogiri (1.5.6)
     nokogiri (1.5.6-x86-mingw32)
+    pg (0.17.1)
     rack (1.4.1)
     rack-protection (1.2.0)
       rack
@@ -49,6 +50,7 @@ DEPENDENCIES
   differ
   haml
   nokogiri
+  pg
   redis
   sinatra
   tlsmail
