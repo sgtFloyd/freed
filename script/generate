@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+def generate_migration(class_name)
+  timestamp = Time.now.utc.strftime('%Y%m%d%H%M%S')
+  file_name = "#{timestamp}_#{underscore(class_name)}.rb"
+  File.open(File.join('db', 'migrate', file_name), 'w') do |file|
+    file.write <<-EOF
+class #{class_name} < ActiveRecord::Migration
+  def self.up
+  end
+
+  def self.down
+  end
+end
+    EOF
+  end
+end
+
+def underscore(camel_cased_word)
+  camel_cased_word.to_s
+    .gsub(/([a-z\d])([A-Z])/,'\1_\2')
+    .gsub(/([A-Z\d]+)([A-Z][a-z])/,'\1_\2')
+    .tr('-', '_').downcase
+end
+
+case ARGV.shift
+when 'migration'
+  require 'fileutils'
+  generate_migration ARGV.shift
+end
