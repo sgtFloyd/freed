@@ -11,10 +11,13 @@ require 'yaml'
 db_conf = YAML.load_file('config/database.yml')
 ActiveRecord::Base.establish_connection db_conf
 
+require_relative 'concerns/warden_password_auth.rb'
 require_relative 'models/feed.rb'
 require_relative 'models/user.rb'
 
 class FreedApp < Sinatra::Base
+  extend WardenPasswordAuth
+
   configure do
     conf = YAML.load_file('config/freed.yml')
     FREED_URL = conf[:freed_url]
@@ -27,6 +30,23 @@ class FreedApp < Sinatra::Base
         :secret_hash_key => conf[:secret_hash_key]
   end
   $settings = settings
+
+  get '/login' do
+    haml :login
+  end
+  post '/login' do
+    warden.authenticate!
+    redirect session[:return_to] || '/'
+  end
+  get '/logout' do
+    warden.raw_session.inspect
+    warden.logout
+    redirect '/'
+  end
+  post '/auth' do
+    session[:return_to] = env['warden.options'][:attempted_path]
+    redirect '/login'
+  end
 
   get '/' do
     haml :index, :locals => { :feeds => Feed.all }
