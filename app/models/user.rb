@@ -5,5 +5,4 @@ class User < ActiveRecord::Base
   def authenticate(attempted_password)
     attempted_password == self.password
   end
-
 end

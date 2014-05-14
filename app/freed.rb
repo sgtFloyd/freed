@@ -8,9 +8,13 @@ require 'securerandom'
 require 'time'
 require 'yaml'
 
-require_relative 'models/feed.rb'
+db_conf = YAML.load_file('config/database.yml')
+ActiveRecord::Base.establish_connection db_conf
 
-class FreedAdd < Sinatra::Base
+require_relative 'models/feed.rb'
+require_relative 'models/user.rb'
+
+class FreedApp < Sinatra::Base
   configure do
     conf = YAML.load_file('config/freed.yml')
     FREED_URL = conf[:freed_url]
